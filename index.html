@@ -250,20 +250,62 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
   var CFG = window.ARIZA_CONFIG || {};
   var DAY = 864e5;
   var LOCS = [
-    { id: "zk-kantin", floor: 0, name: "Kantin" },
-    { id: "zk-wc", floor: 0, name: "Zemin kat tuvalet" },
     { id: "zk-bahce", floor: 0, name: "Bahçe" },
-    { id: "zk-spor", floor: 0, name: "Spor salonu" },
-    { id: "k1-9a", floor: 1, name: "9-A sınıfı" },
-    { id: "k1-9b", floor: 1, name: "9-B sınıfı" },
-    { id: "k1-kutup", floor: 1, name: "Kütüphane" },
-    { id: "k1-kor", floor: 1, name: "1. kat koridor" },
-    { id: "k2-bt", floor: 2, name: "BT sınıfı" },
-    { id: "k2-lab", floor: 2, name: "Fen laboratuvarı" },
-    { id: "k2-10a", floor: 2, name: "10-A sınıfı" },
-    { id: "k2-kor", floor: 2, name: "2. kat koridor" }
+    { id: "zk-kantin", floor: 0, name: "Kantin" },
+    { id: "zk-salon", floor: 0, name: "Çok Amaçlı Salon" },
+    { id: "zk-koridor", floor: 0, name: "Zemin Kat Koridor" },
+    { id: "id-wc-erkek", floor: 1, name: "Erkek Öğretmen WC" },
+    { id: "id-mescit", floor: 1, name: "Mescit" },
+    { id: "id-my1", floor: 1, name: "Md. Yard. Odası 1" },
+    { id: "id-my2", floor: 1, name: "Md. Yard. Odası 2" },
+    { id: "id-my3", floor: 1, name: "Md. Yard. Odası 3" },
+    { id: "id-gorevli", floor: 1, name: "Görevli Odası" },
+    { id: "id-arsiv", floor: 1, name: "Arşiv" },
+    { id: "id-elektrik", floor: 1, name: "Elektrik Odası" },
+    { id: "id-polis", floor: 1, name: "Polis Odası" },
+    { id: "id-koridor", floor: 1, name: "Giriş Kat-İdare Koridor" },
+    { id: "md-mudur", floor: 2, name: "Müdür Odası" },
+    { id: "md-my4", floor: 2, name: "Md. Yard. Odası 4" },
+    { id: "md-ogretmenler", floor: 2, name: "Öğretmenler Odası" },
+    { id: "md-mutfak", floor: 2, name: "Mutfak" },
+    { id: "md-kutuphane", floor: 2, name: "Kütüphane" },
+    { id: "md-robotik", floor: 2, name: "Robotik ve Kodlama Atölyesi" },
+    { id: "md-12ab", floor: 2, name: "12-A/B Sınıfı" },
+    { id: "md-rehberlik", floor: 2, name: "Rehberlik Odası" },
+    { id: "md-wc-kadin", floor: 2, name: "Kadın Öğretmen WC" },
+    { id: "md-koridor", floor: 2, name: "Giriş Kat-Müdür Koridor" },
+    { id: "a1-9c", floor: 3, name: "9-C Sınıfı" },
+    { id: "a1-10c", floor: 3, name: "10-C Sınıfı" },
+    { id: "a1-11c", floor: 3, name: "11-C Sınıfı" },
+    { id: "a1-12cef", floor: 3, name: "12-C/E/F Sınıfı" },
+    { id: "a1-muhasebe", floor: 3, name: "Muhasebe&Ulaştırma Şef Odası" },
+    { id: "a1-koridor", floor: 3, name: "A1 Koridor" },
+    { id: "b1-9b", floor: 4, name: "9-B Sınıfı" },
+    { id: "b1-10b", floor: 4, name: "10-B Sınıfı" },
+    { id: "b1-11b", floor: 4, name: "11-B Sınıfı" },
+    { id: "b1-9e", floor: 4, name: "9-E Sınıfı" },
+    { id: "b1-10e", floor: 4, name: "10-E Sınıfı" },
+    { id: "b1-11e", floor: 4, name: "11-E Sınıfı" },
+    { id: "b1-sistem", floor: 4, name: "Sistem Odası" },
+    { id: "b1-wc-kiz", floor: 4, name: "Kız Öğrenci WC" },
+    { id: "b1-koridor", floor: 4, name: "B1 Koridor" },
+    { id: "a2-lab1", floor: 5, name: "LAB-1" },
+    { id: "a2-lab2", floor: 5, name: "LAB-2" },
+    { id: "a2-lab3", floor: 5, name: "LAB-3" },
+    { id: "a2-lab4", floor: 5, name: "LAB-4" },
+    { id: "a2-bilisim", floor: 5, name: "Bilişim Şef Odası" },
+    { id: "a2-wc-erkek", floor: 5, name: "Erkek Öğrenci WC" },
+    { id: "a2-koridor", floor: 5, name: "A2 Koridor" },
+    { id: "b2-9a", floor: 6, name: "9-A Sınıfı" },
+    { id: "b2-10a", floor: 6, name: "10-A Sınıfı" },
+    { id: "b2-11a", floor: 6, name: "11-A Sınıfı" },
+    { id: "b2-9f", floor: 6, name: "9-F Sınıfı" },
+    { id: "b2-10f", floor: 6, name: "10-F Sınıfı" },
+    { id: "b2-11f", floor: 6, name: "11-F Sınıfı" },
+    { id: "b2-adalet", floor: 6, name: "Adalet&Büro Şef Odası" },
+    { id: "b2-koridor", floor: 6, name: "B2 Koridor" }
   ];
-  var FLOORS = ["Zemin kat", "1. kat", "2. kat"];
+  var FLOORS = ["Zemin Kat", "Giriş Kat-İdare", "Giriş Kat-Müdür", "A1", "B1", "A2", "B2"];
   var CATS = [
     { id: "musluk", label: "Musluk / tesisat" },
     { id: "lamba", label: "Lamba" },
@@ -307,15 +349,15 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     function seed() {
       var n = Date.now();
       return { reports: [
-        { id: "r1", loc: "zk-wc", cat: "musluk", note: "Lavabo musluğu sürekli su akıtıyor", status: "islemde", urgent: false, votes: 4, created: n - 3 * DAY, resolved: null },
-        { id: "r2", loc: "k2-bt", cat: "priz", note: "Priz kapağı kırık, kablo görünüyor", status: "bildirildi", urgent: true, votes: 6, created: n - 1 * DAY, resolved: null },
-        { id: "r3", loc: "k1-kutup", cat: "lamba", note: "Okuma masalarının üstündeki lamba yanmıyor", status: "bildirildi", urgent: false, votes: 2, created: n - 5 * DAY, resolved: null },
-        { id: "r4", loc: "k1-9a", cat: "sira", note: "Üç sıranın ayağı sallanıyor", status: "bildirildi", urgent: false, votes: 1, created: n - 2 * DAY, resolved: null },
+        { id: "r1", loc: "b1-wc-kiz", cat: "musluk", note: "Lavabo musluğu sürekli su akıtıyor", status: "islemde", urgent: false, votes: 4, created: n - 3 * DAY, resolved: null },
+        { id: "r2", loc: "a2-lab1", cat: "priz", note: "Priz kapağı kırık, kablo görünüyor", status: "bildirildi", urgent: true, votes: 6, created: n - 1 * DAY, resolved: null },
+        { id: "r3", loc: "md-kutuphane", cat: "lamba", note: "Okuma masalarının üstündeki lamba yanmıyor", status: "bildirildi", urgent: false, votes: 2, created: n - 5 * DAY, resolved: null },
+        { id: "r4", loc: "b2-9a", cat: "sira", note: "Üç sıranın ayağı sallanıyor", status: "bildirildi", urgent: false, votes: 1, created: n - 2 * DAY, resolved: null },
         { id: "r5", loc: "zk-kantin", cat: "musluk", note: "Eski lavabo gideri tıkalıydı", status: "cozuldu", urgent: false, votes: 3, created: n - 14 * DAY, resolved: n - 5 * DAY },
-        { id: "r6", loc: "k2-lab", cat: "isinma", note: "Radyatör ısınmıyor", status: "cozuldu", urgent: false, votes: 2, created: n - 10 * DAY, resolved: n - 6 * DAY },
+        { id: "r6", loc: "a2-lab2", cat: "isinma", note: "Radyatör ısınmıyor", status: "cozuldu", urgent: false, votes: 2, created: n - 10 * DAY, resolved: n - 6 * DAY },
         { id: "r7", loc: "zk-bahce", cat: "kapi", note: "Bahçe kapısının mandalı kopmuş", status: "islemde", urgent: false, votes: 3, created: n - 6 * DAY, resolved: null },
-        { id: "r8", loc: "k2-10a", cat: "lamba", note: "Sönük lamba değiştirildi", status: "cozuldu", urgent: false, votes: 1, created: n - 8 * DAY, resolved: n - 7 * DAY },
-        { id: "r9", loc: "zk-wc", cat: "cam", note: "Pencere camı çatlak", status: "bildirildi", urgent: true, votes: 2, created: n - 0.2 * DAY, resolved: null }
+        { id: "r8", loc: "b2-10a", cat: "lamba", note: "Sönük lamba değiştirildi", status: "cozuldu", urgent: false, votes: 1, created: n - 8 * DAY, resolved: n - 7 * DAY },
+        { id: "r9", loc: "b1-wc-kiz", cat: "cam", note: "Pencere camı çatlak", status: "bildirildi", urgent: true, votes: 2, created: n - 0.2 * DAY, resolved: null }
       ] };
     }
     try { var raw = localStorage.getItem(KEY); if (raw) state = JSON.parse(raw); } catch (e) {}
@@ -400,7 +442,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
       sel.appendChild(g);
     });
     // QR bağlantısı: #bildir?... yerine yalnızca #bildir-<konum> biçimi kullanılır.
-    sel.value = locFromHash() || "k2-bt";
+    sel.value = locFromHash() || LOCS[0].id;
     var box = $("cats");
     CATS.forEach(function (c, i) {
       var lab = document.createElement("label"); if (c.urgent) lab.className = "urg";
@@ -588,7 +630,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     var plan = $("plan"); plan.textContent = "";
     var counts = {};
     adminRows.forEach(function (r) { if (r.status !== "cozuldu") counts[r.loc] = (counts[r.loc] || 0) + 1; });
-    for (var f = 2; f >= 0; f--) {
+    for (var f = 0; f < FLOORS.length; f++) {
       var fl = el("div", "floor"); fl.appendChild(el("h3", null, FLOORS[f]));
       var rooms = el("div", "rooms");
       LOCS.filter(function (l) { return l.floor === f; }).forEach(function (l) {
