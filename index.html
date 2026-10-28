@@ -280,6 +280,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
   function locName(id) { for (var i = 0; i < LOCS.length; i++) if (LOCS[i].id === id) return LOCS[i].name; return id; }
   function catLabel(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i].label; return id; }
   function catUrgent(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return !!CATS[i].urgent; return false; }
+  function errMsg(e) { return (e && (e.message || e.details || e.hint)) || String(e); }
   function $(id) { return document.getElementById(id); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function fmt(n) { return n.toLocaleString("tr-TR", { maximumFractionDigits: 1 }); }
@@ -436,7 +437,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     b1.addEventListener("click", async function () {
       b1.disabled = true;
       try { await api.plusOne(dup.id); addMine(dup.id); toast("+1 verildi. Teşekkürler."); }
-      catch (e) { toast("Gönderilemedi. İnternet bağlantınızı kontrol edin."); }
+      catch (e) { toast("Gönderilemedi: " + errMsg(e)); }
       checkDup(); refreshMine(); if (isAdminView()) refreshAdmin();
     });
     var b2 = el("button", "btn ghost small", "Farklı arıza, yeni bildir"); b2.type = "button";
@@ -474,7 +475,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
       $("note").value = ""; $("photo").value = ""; photoData = null; $("photo-prev").hidden = true;
       toast(r.urgent ? "Bildirim gönderildi. Acil olarak işaretlendi." : "Bildirim gönderildi.");
     } catch (e) {
-      toast("Gönderilemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.");
+      toast("Gönderilemedi: " + errMsg(e));
     }
     btn.disabled = false;
     checkDup(); refreshMine(); if (isAdminView()) refreshAdmin();
@@ -538,7 +539,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     $("gate").hidden = allowed;
     $("admin-body").hidden = !allowed;
     if (!allowed) return;
-    try { adminRows = await api.adminList(); } catch (e) { adminRows = []; toast("Liste yüklenemedi."); }
+    try { adminRows = await api.adminList(); } catch (e) { adminRows = []; toast("Liste yüklenemedi: " + errMsg(e)); }
     if (api.cloud) { try { $("who").textContent = "Giriş yapan: " + (await api.email()); } catch (e) {} }
     else { $("who").textContent = "Demo modu: giriş gerekmez."; }
     $("logout").hidden = !api.cloud;
@@ -609,10 +610,10 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     var btn = $("login-btn"); btn.disabled = true;
     try {
       var res = await api.login($("email").value.trim(), $("password").value);
-      if (res.error) { err.textContent = "E-posta veya şifre hatalı."; err.hidden = false; }
+      if (res.error) { err.textContent = "Giriş yapılamadı: " + res.error.message; err.hidden = false; }
       else if (!(await api.isAdmin())) { await api.logout(); err.textContent = "Bu hesabın yönetici yetkisi yok."; err.hidden = false; }
       else { $("password").value = ""; await refreshAdmin(); }
-    } catch (x) { err.textContent = "Giriş yapılamadı. İnternet bağlantınızı kontrol edin."; err.hidden = false; }
+    } catch (x) { err.textContent = "Giriş yapılamadı: " + errMsg(x); err.hidden = false; }
     btn.disabled = false;
   });
   $("logout").addEventListener("click", async function () { await api.logout(); adminRows = []; await refreshAdmin(); });
