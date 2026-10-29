@@ -137,6 +137,17 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
 .gate { max-width: 440px; margin: 0 auto; }
 .err { color: var(--red); font-weight: 600; margin: 10px 0 0; }
 
+.rep .ph { padding: 0; border: 0; background: none; cursor: zoom-in; flex: none; border-radius: 4px; line-height: 0; }
+.rep .ph:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.lightbox { position: fixed; inset: 0; z-index: 30; background: rgba(10, 16, 20, .88); display: flex; align-items: center; justify-content: center; padding: 56px 16px 16px; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; background: #000; }
+.lightbox .x { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 16px; }
+.mtable { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 560px; }
+.mtable th, .mtable td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: top; }
+.mtable th { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.mtable td.num, .mtable th.num { text-align: right; }
+.mtable tr.cur td { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.mwrap { overflow-x: auto; }
 </style>
 </head>
 <body>
@@ -231,6 +242,14 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
               <i style="background:color-mix(in srgb, var(--red) 0%, var(--surface))"></i><i style="background:color-mix(in srgb, var(--red) 32%, var(--surface))"></i><i style="background:color-mix(in srgb, var(--red) 64%, var(--surface))"></i><i style="background:color-mix(in srgb, var(--red) 96%, var(--surface))"></i><span>6+</span></div>
           </section>
         </div>
+        <section class="card" aria-labelledby="h-month" style="margin-top:20px">
+          <div class="row" style="justify-content: space-between; margin-bottom: 12px">
+            <h2 id="h-month" style="margin:0">Aylık rapor</h2>
+            <button class="btn ghost small" id="csv" type="button">Excel için indir (CSV)</button>
+          </div>
+          <div class="mwrap"><table class="mtable" id="mtable"></table></div>
+          <p class="hint" style="margin-top:10px">Bildirilen: o ay gelen bildirim. Çözülen: o ay çözülüp kapatılan arıza. Ay sonu açık: ayın son gününde hâlâ çözülmemiş olanlar.</p>
+        </section>
       </div>
     </div>
   </main>
@@ -239,6 +258,10 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     <span id="foot-text"></span>
     <button class="btn ghost small" id="reset" type="button" hidden>Örnek veriyi sıfırla</button>
   </footer>
+</div>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Fotoğraf" hidden>
+  <button class="btn small x" id="lb-close" type="button">Kapat</button>
+  <img id="lb-img" alt="Bildirim fotoğrafı, büyük görünüm">
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
@@ -488,6 +511,14 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     box.appendChild(row);
   }
 
+  function openPhoto(src) {
+    $("lb-img").src = src; $("lightbox").hidden = false; $("lb-close").focus();
+  }
+  function closePhoto() { $("lightbox").hidden = true; $("lb-img").removeAttribute("src"); }
+  $("lb-close").addEventListener("click", closePhoto);
+  $("lightbox").addEventListener("click", function (e) { if (e.target === $("lightbox")) closePhoto(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("lightbox").hidden) closePhoto(); });
+
   function onPhoto(e) {
     var f = e.target.files && e.target.files[0];
     var prev = $("photo-prev");
@@ -497,10 +528,20 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     fr.onload = function () {
       var img = new Image();
       img.onload = function () {
-        var max = 480, s = Math.min(1, max / Math.max(img.width, img.height));
-        var c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-        photoData = c.toDataURL("image/jpeg", 0.65);
+        var max = 1100, out = null;
+        for (var attempt = 0; attempt < 6 && !out; attempt++) {
+          var sc = Math.min(1, max / Math.max(img.width, img.height));
+          var c = document.createElement("canvas"); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          var qs = [0.72, 0.6, 0.5];
+          for (var qi = 0; qi < qs.length && !out; qi++) {
+            var d = c.toDataURL("image/jpeg", qs[qi]);
+            if (d.length <= 115000) out = d;
+          }
+          max = Math.round(max * 0.8);
+        }
+        photoData = out;
+        if (!out) { toast("Fotoğraf çok büyük, eklenemedi."); $("photo").value = ""; return; }
         prev.src = photoData; prev.hidden = false;
       };
       img.src = fr.result;
@@ -535,7 +576,12 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
 
     if (r.note || r.photo) {
       var body = el("div", "row"); body.style.alignItems = "flex-start"; body.style.flexWrap = "nowrap";
-      if (r.photo) { var im = document.createElement("img"); im.src = r.photo; im.alt = "Bildirim fotoğrafı"; body.appendChild(im); }
+      if (r.photo) {
+        var pb = document.createElement("button"); pb.type = "button"; pb.className = "ph"; pb.setAttribute("aria-label", "Fotoğrafı büyüt");
+        var im = document.createElement("img"); im.src = r.photo; im.alt = "Bildirim fotoğrafı"; pb.appendChild(im);
+        pb.addEventListener("click", function () { openPhoto(r.photo); });
+        body.appendChild(pb);
+      }
       if (r.note) { var pn = el("p", "rep-note", r.note); pn.style.minWidth = "0"; body.appendChild(pn); }
       li.appendChild(body);
     }
@@ -585,7 +631,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     if (api.cloud) { try { $("who").textContent = "Giriş yapan: " + (await api.email()); } catch (e) {} }
     else { $("who").textContent = "Demo modu: giriş gerekmez."; }
     $("logout").hidden = !api.cloud;
-    renderStats(); renderFilters(); renderAdminList(); renderPlan();
+    renderStats(); renderFilters(); renderAdminList(); renderPlan(); renderMonthly();
   }
   function renderStats() {
     var open = adminRows.filter(function (r) { return r.status !== "cozuldu"; });
@@ -626,6 +672,56 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     if (!rows.length) { ul.appendChild(el("li", "empty", "Bu filtrede bildirim yok.")); return; }
     rows.forEach(function (r) { ul.appendChild(reportCard(r, true)); });
   }
+  var monthRows = [];
+  function buildMonthly() {
+    var map = {};
+    function key(t) { var d = new Date(t); return d.getFullYear() * 100 + d.getMonth(); }
+    function slot(k) { return map[k] || (map[k] = { k: k, y: Math.floor(k / 100), m: k % 100, reported: 0, solved: 0, urgent: 0, days: 0, locs: {} }); }
+    adminRows.forEach(function (r) {
+      var a = slot(key(r.created)); a.reported++; if (r.urgent) a.urgent++; a.locs[r.loc] = (a.locs[r.loc] || 0) + 1;
+      if (r.status === "cozuldu" && r.resolved) { var b = slot(key(r.resolved)); b.solved++; b.days += (r.resolved - r.created) / DAY; }
+    });
+    var keys = Object.keys(map).map(Number).sort(function (a, b) { return b - a; });
+    return keys.map(function (k) {
+      var x = map[k];
+      var end = new Date(x.y, x.m + 1, 1).getTime();            // ayın bitişi
+      x.open = adminRows.filter(function (r) { return r.created < end && (!(r.status === "cozuldu" && r.resolved) || r.resolved >= end); }).length;
+      var top = null, n = 0; Object.keys(x.locs).forEach(function (l) { if (x.locs[l] > n) { n = x.locs[l]; top = l; } });
+      x.top = top ? locName(top) + " (" + n + ")" : "–";
+      x.avg = x.solved ? x.days / x.solved : null;
+      x.label = new Date(x.y, x.m, 1).toLocaleDateString("tr-TR", { month: "long", year: "numeric" });
+      return x;
+    });
+  }
+  function renderMonthly() {
+    monthRows = buildMonthly();
+    var t = $("mtable"); t.textContent = "";
+    var head = el("tr");
+    [["Ay", ""], ["Bildirilen", "num"], ["Çözülen", "num"], ["Ay sonu açık", "num"], ["Acil", "num"], ["Ort. çözüm (gün)", "num"], ["En çok arıza", ""]].forEach(function (h) {
+      var th = el("th", h[1], h[0]); th.scope = "col"; head.appendChild(th);
+    });
+    var thead = el("thead"); thead.appendChild(head); t.appendChild(thead);
+    var tb = el("tbody");
+    if (!monthRows.length) { var tr0 = el("tr"); var td0 = el("td", null, "Henüz bildirim yok."); td0.colSpan = 7; tr0.appendChild(td0); tb.appendChild(tr0); }
+    var nowK = new Date().getFullYear() * 100 + new Date().getMonth();
+    monthRows.forEach(function (x) {
+      var tr = el("tr", x.k === nowK ? "cur" : "");
+      [[x.label, ""], [String(x.reported), "num"], [String(x.solved), "num"], [String(x.open), "num"], [String(x.urgent), "num"], [x.avg == null ? "–" : fmt(x.avg), "num"], [x.top, ""]].forEach(function (c) { tr.appendChild(el("td", c[1], c[0])); });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+  function downloadCsv() {
+    var lines = [["Ay", "Bildirilen", "Çözülen", "Ay sonu açık", "Acil", "Ort. çözüm (gün)", "En çok arıza"]];
+    monthRows.forEach(function (x) { lines.push([x.label, x.reported, x.solved, x.open, x.urgent, x.avg == null ? "" : fmt(x.avg), x.top]); });
+    var csv = "\uFEFF" + lines.map(function (r) { return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(";"); }).join("\r\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = "ariza-aylik-rapor.csv"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+  $("csv").addEventListener("click", downloadCsv);
+
   function renderPlan() {
     var plan = $("plan"); plan.textContent = "";
     var counts = {};
@@ -636,7 +732,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
       LOCS.filter(function (l) { return l.floor === f; }).forEach(function (l) {
         var n = counts[l.id] || 0;
         var rm = el("div", "room"); rm.style.setProperty("--h", Math.min(n, 6)); rm.setAttribute("data-h", n);
-        rm.appendChild(el("span", null, l.name)); rm.appendChild(el("b", null, String(n)));
+        rm.appendChild(el("span", null, l.name.replace("&", "&\u200b"))); rm.appendChild(el("b", null, String(n)));
         rm.setAttribute("aria-label", l.name + ": " + n + " açık arıza");
         rooms.appendChild(rm);
       });
