@@ -60,7 +60,8 @@ nav a {
 }
 nav a[aria-current="page"] { background: var(--ink); color: var(--bg); }
 nav a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, label:focus-within { outline: 3px solid var(--blue); outline-offset: 2px; }
-main { margin-top: 20px; display: grid; gap: 20px; }
+main { margin-top: 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+#view-yonetim, #admin-body { min-width: 0; }
 .cols { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 820px) { .cols { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; } }
 section.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px; min-width: 0; }
@@ -114,10 +115,12 @@ textarea { min-height: 80px; resize: vertical; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.acil { color: var(--accent-ink); } }
 .votes { font-family: var(--f-mono); font-size: 13px; }
 /* stats */
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; min-width: 0; }
 .stat b { display: block; font-family: var(--f-display); font-size: 40px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
 .stat span { font-size: 13px; color: var(--muted); }
+.stat b { overflow-wrap: anywhere; }
+@media (max-width: 520px) { .stat:last-child { grid-column: 1 / -1; } }
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .filters button { font: inherit; font-size: 14px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); cursor: pointer; }
 .filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
@@ -160,6 +163,17 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
 .panel label.field { margin: 0; }
 .btn.danger { background: transparent; color: var(--red); border-color: var(--red); }
 .btn.danger.solid { background: var(--red); color: var(--bg); }
+details > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 4px; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+.sum-main { display: grid; gap: 2px; min-width: 0; }
+.sum-main h2 { margin: 0; }
+.chev { flex: none; width: 11px; height: 11px; margin: 0 8px 4px 0; border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(45deg); }
+details[open] > summary .chev { transform: rotate(-135deg); margin: 6px 8px 0 0; }
+@media (prefers-reduced-motion: no-preference) { .chev { transition: transform .2s; } }
+.map-body { margin-top: 14px; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; margin: 0 0 14px; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--ink); }
 </style>
 </head>
 <body>
@@ -247,11 +261,19 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
             <ul class="list" id="admin-list"></ul>
           </section>
           <section class="card" aria-labelledby="h-map">
-            <h2 id="h-map">Isı haritası</h2>
+           <details id="map-details">
+            <summary>
+              <span class="sum-main"><h2 id="h-map">Isı haritası</h2><span class="hint" id="map-sum"></span></span>
+              <span class="chev" aria-hidden="true"></span>
+            </summary>
+            <div class="map-body">
             <p class="hint" style="margin-bottom:12px">Açık arıza sayısı. Koyu kırmızı, daha çok bildirim demek.</p>
+            <label class="check" for="map-all"><input type="checkbox" id="map-all"> Arızası olmayan alanları da göster</label>
             <div id="plan"></div>
             <div class="legend-scale"><span>0</span>
               <i style="background:color-mix(in srgb, var(--red) 0%, var(--surface))"></i><i style="background:color-mix(in srgb, var(--red) 32%, var(--surface))"></i><i style="background:color-mix(in srgb, var(--red) 64%, var(--surface))"></i><i style="background:color-mix(in srgb, var(--red) 96%, var(--surface))"></i><span>6+</span></div>
+            </div>
+           </details>
           </section>
         </div>
         <section class="card" aria-labelledby="h-month" style="margin-top:20px">
@@ -349,6 +371,7 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     { id: "kapi", label: "Kapı / pencere" },
     { id: "cam", label: "Kırık cam", urgent: true },
     { id: "isinma", label: "Isıtma" },
+    { id: "bilgisayar", label: "Bilgisayar" },
     { id: "diger", label: "Diğer" }
   ];
   var STATUS = { bildirildi: "Bildirildi", islemde: "İşleme alındı", cozuldu: "Çözüldü" };
@@ -760,8 +783,8 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
     var topLoc = null, topN = 0;
     Object.keys(counts).forEach(function (k) { if (counts[k] > topN) { topN = counts[k]; topLoc = k; } });
     var box = $("stats"); box.textContent = "";
-    [[String(open.length), "açık arıza"], [String(urgent), "acil"], [avg == null ? "–" : fmt(avg), "gün ortalama çözüm süresi"], [topLoc ? locName(topLoc) : "–", topLoc ? "en çok arızalı yer (" + topN + ")" : "en çok arızalı yer"], [avgRate == null ? "–" : fmt(avgRate), "memnuniyet, 5 üzerinden" + (rated.length ? " (" + rated.length + " oy)" : "")]].forEach(function (s, i) {
-      var d = el("div", "stat"); var b = el("b", null, s[0]); if (i === 3) { b.style.fontSize = "26px"; b.style.paddingTop = "8px"; b.style.paddingBottom = "6px"; }
+    [[String(open.length), "açık arıza"], [String(urgent), "acil"], [avg == null ? "–" : fmt(avg), "gün ortalama çözüm süresi"], [avgRate == null ? "–" : fmt(avgRate), "memnuniyet, 5 üzerinden" + (rated.length ? " (" + rated.length + " oy)" : "")], [topLoc ? locName(topLoc) : "–", topLoc ? "en çok arızalı yer (" + topN + ")" : "en çok arızalı yer"]].forEach(function (s, i) {
+      var d = el("div", "stat"); var b = el("b", null, s[0]); if (i === 4) { b.style.fontSize = "26px"; b.style.paddingTop = "8px"; b.style.paddingBottom = "6px"; }
       d.appendChild(b); d.appendChild(el("span", null, s[1])); box.appendChild(d);
     });
   }
@@ -842,12 +865,17 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
 
   function renderPlan() {
     var plan = $("plan"); plan.textContent = "";
-    var counts = {};
+    var showAll = $("map-all").checked;
+    var counts = {}, areas = 0;
     adminRows.forEach(function (r) { if (r.status !== "cozuldu") counts[r.loc] = (counts[r.loc] || 0) + 1; });
+    Object.keys(counts).forEach(function () { areas++; });
+    $("map-sum").textContent = areas ? areas + " alanda açık arıza var" : "Açık arıza yok";
     for (var f = 0; f < FLOORS.length; f++) {
+      var list = LOCS.filter(function (l) { return l.floor === f && (showAll || counts[l.id]); });
+      if (!list.length) continue;
       var fl = el("div", "floor"); fl.appendChild(el("h3", null, FLOORS[f]));
       var rooms = el("div", "rooms");
-      LOCS.filter(function (l) { return l.floor === f; }).forEach(function (l) {
+      list.forEach(function (l) {
         var n = counts[l.id] || 0;
         var rm = el("div", "room"); rm.style.setProperty("--h", Math.min(n, 6)); rm.setAttribute("data-h", n);
         rm.appendChild(el("span", null, l.name.replace("&", "&\u200b"))); rm.appendChild(el("b", null, String(n)));
@@ -856,7 +884,14 @@ footer { margin-top: 24px; font-size: 13px; color: var(--muted); display: flex; 
       });
       fl.appendChild(rooms); plan.appendChild(fl);
     }
+    if (!plan.firstChild) plan.appendChild(el("p", "empty", "Şu an hiçbir alanda açık arıza yok."));
   }
+  (function () {
+    var d = $("map-details");
+    try { if (localStorage.getItem("ariza-map-open") === "1") d.open = true; } catch (e) {}
+    d.addEventListener("toggle", function () { try { localStorage.setItem("ariza-map-open", d.open ? "1" : "0"); } catch (e) {} });
+    $("map-all").addEventListener("change", renderPlan);
+  })();
 
   /* ---------- giriş ---------- */
   $("login-form").addEventListener("submit", async function (e) {
